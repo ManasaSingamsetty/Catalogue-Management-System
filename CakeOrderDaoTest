@@ -1,0 +1,211 @@
+package com.cg.cakeorder.service;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.cg.cakeorder.Exception.CakeException;
+import com.cg.cakeorder.Exception.CustomerException;
+import com.cg.cakeorder.dto.CakeOrder;
+import com.cg.cakeorder.dto.Customer;
+
+public interface ICakeOrderService {
+/*
+* Map CakeType=new HashMap(); CakeType.put("Strawberry","105");
+* CakeType.put("Vanila","120"); CakeType.put("RedVelvet","180");
+* CakeType.put("BlackForest","140");
+*/
+public double getPrice(String name);
+boolean validate(Customer c) throws CustomerException;
+public int placeOrder(Customer customer, CakeOrder cake) throws CakeException;
+public CakeOrder getOrderDetails(int orderid)  throws CakeException; 
+
+
+}
+
+package com.cg.cakeorder.dao;
+
+import com.cg.cakeorder.Exception.CakeException;
+import com.cg.cakeorder.dto.CakeOrder;
+import com.cg.cakeorder.dto.Customer;
+
+public interface ICakeOrderDAO {
+public int placeOrder(Customer customer,CakeOrder cake) throws CakeException;
+public CakeOrder getOrderDetails(int orderid) throws CakeException;
+
+}
+
+package com.cg.cakeorder.dao;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+import com.cg.cakeorder.Exception.CakeException;
+import com.cg.cakeorder.dto.CakeOrder;
+import com.cg.cakeorder.dto.Customer;
+
+public class CakeOrderDAO implements ICakeOrderDAO{
+//map for orderid as key and Cake order as value
+Map<Integer, CakeOrder> CakeMap=new HashMap<Integer,CakeOrder>();
+//map for customerid as key  and customer object  as value
+Map<Integer,Customer> customerMap=new HashMap<>();
+
+@Override
+public int placeOrder(Customer customer, CakeOrder cake) throws CakeException {
+// TODO Auto-generated method stub
+try {
+Random random=new Random();
+int custId=Math.abs(random.nextInt());
+//System.out.println(custId);
+cake.setCustomerId(custId);
+int orderid=Math.abs(random.nextInt());
+cake.setOrderId(orderid);
+customerMap.put(custId, customer);
+CakeMap.put(cake.getOrderId(),cake);
+return cake.getOrderId();
+}
+catch(Exception ex) {
+throw new CakeException(ex.getMessage());
+}
+}
+
+
+@Override
+public CakeOrder getOrderDetails(int orderId) throws CakeException {
+// TODO Auto-generated method stub
+/*
+* for (Integer key : CakeMap.keySet()) { if(key==orderId) { return
+* CakeMap.get(key); } }
+*/
+if(CakeMap.containsKey(orderId)) {
+return CakeMap.get(orderId);
+}
+else {
+throw new CakeException("Invalid Order Id");
+}
+ }
+
+
+
+public Map<Integer, CakeOrder> getCakeMap() {
+return CakeMap;
+}
+
+
+
+public Map<Integer, Customer> getCustomerMap() {
+return customerMap;
+}
+}
+package com.cg.cakeorder.service;
+
+import com.cg.cakeorder.Exception.CakeException;
+import com.cg.cakeorder.Exception.CustomerException;
+import com.cg.cakeorder.dao.CakeOrderDAO;
+import com.cg.cakeorder.dao.ICakeOrderDAO;
+import com.cg.cakeorder.dto.CakeOrder;
+import com.cg.cakeorder.dto.Customer;
+
+public class CakeOrderService implements ICakeOrderService {
+ICakeOrderDAO icDao;
+public CakeOrderService()
+{
+icDao=new CakeOrderDAO();
+}
+@Override
+public int placeOrder(Customer customer, CakeOrder cake) throws CakeException {
+// TODO Auto-generated method stub
+return icDao.placeOrder(customer, cake);
+}
+
+@Override
+public CakeOrder getOrderDetails(int orderid) throws CakeException {
+// TODO Auto-generated method stub
+return icDao.getOrderDetails(orderid);
+}
+
+@Override
+public boolean validate(Customer c) throws CustomerException {
+boolean flag=true;
+StringBuilder sb=new StringBuilder();
+if(!validateMobile(c.getPhone()))
+{
+sb.append("Invalid Mobile");
+sb.append("\n");
+flag=false;
+}
+if(flag)
+{
+return flag;
+}
+else
+{
+throw new CustomerException(sb.toString());
+}
+// TODO Auto-generated method stub
+}
+private boolean validateMobile(String mobile) {
+return mobile.matches("\\d{10}");
+}
+
+@Override
+public double getPrice(String name) {
+// TODO Auto-generated method stub
+double price=0;
+double base=500;
+if(name.equalsIgnoreCase("Strawberry")) {
+return price=base+105;
+}
+else if(name.equalsIgnoreCase("Vanila"))
+{
+return price=base+120;
+}
+else if(name.equalsIgnoreCase("RedVelvet"))
+{
+return price=base+180;
+}
+else if(name.equalsIgnoreCase("BlackForest"))
+{
+price=base+140;
+}
+return price;
+}
+
+
+}
+
+package com.cg.cakeorder.dao;
+
+import static org.junit.Assert.assertNotNull;
+
+import java.util.Map;
+
+import org.junit.Test;
+
+import com.cg.cakeorder.Exception.CakeException;
+import com.cg.cakeorder.dto.CakeOrder;
+import com.cg.cakeorder.dto.Customer;
+
+public class CakeOrderDAOTest {
+
+@Test
+public void testPlaceOrder() throws CakeException {
+CakeOrderDAO dao=new CakeOrderDAO();
+CakeOrder order=new CakeOrder();
+order.setTotalPrice(500);
+Customer c=new Customer();
+c.setCustName("Binu");
+c.setAddress("BLR");
+c.setPhone("9999999999");
+int result=dao.placeOrder(c, order);
+Map<Integer,CakeOrder> map=dao.getCakeMap();
+assertNotNull(map.get(result));
+Map<Integer,Customer> customers=dao.getCustomerMap();
+assertNotNull(customers.get(order.getCustomerId()));
+}
+@Test(expected = CakeException.class)
+public void testGetDetail() throws CakeException {
+
+}
+
+}
