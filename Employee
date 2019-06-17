@@ -232,3 +232,107 @@ public class EmployeeServiceImpl implements EmployeeService{
 	}
 
 }
+<---------------------------client--------------------------------->
+package com.cg.employeeapp.ui;
+
+import java.util.List;
+import java.util.Scanner;
+
+import com.cg.employeeapp.dto.Employee;
+import com.cg.employeeapp.exception.EmployeeException;
+import com.cg.employeeapp.service.EmployeeService;
+import com.cg.employeeapp.service.EmployeeServiceImpl;
+
+public class client {
+	static EmployeeService employeeService=new EmployeeServiceImpl();
+	static Scanner sc=new Scanner(System.in);
+	public static void main(String[] args) 
+	{
+		int response;
+
+		while(true)
+		{
+			System.out.println("1) View All Employees");
+			System.out.println("2)Add Employee");
+			System.out.println("3)Delete Employee");
+			System.out.println("4)Update Employee");
+			System.out.println("5)Exit");
+			response=sc.nextInt();
+			switch(response) {
+			case 1: 
+				showAllEmployees();
+				break;
+			case 2:
+				addEmployee();
+				break;
+			case 3:
+				deleteEmployee();
+				break;
+			case 4:
+				break;
+			case 5:
+				System.exit(0);
+				break;
+			default:
+				System.out.println("Invalid Option, please select form 1 to 5");
+				break;
+			}
+		}
+	}
+	public static void showAllEmployees() {
+		try
+		{
+			List<Employee> employees=employeeService.getAllEmployees();
+			System.out.println("Employee Id\tName\tGender\tAge\tSalary\tMobile No");
+			for (Employee e : employees) {
+				System.out.println(e.getId()+"\t\t"+e.getName()+"\t"+e.getGender()+"\t"+e.getAge()+"\t"+e.getSalary()+"\t"+e.getMobile());
+			}
+		}
+		catch(EmployeeException e) {
+			System.err.println("Error occurred: "+e.getMessage());
+		}	
+	}
+	public static void addEmployee() {
+		try {
+			Employee emp=new Employee();
+			System.out.println("Enter Employee Details");
+			System.out.println("Employee Id: ");
+			emp.setId(sc.nextInt());
+			sc.nextLine();
+			System.out.println("Employee Name: ");
+			emp.setName(sc.nextLine());
+			System.out.println("Gender: ");
+			emp.setGender(sc.nextLine());
+			System.out.println("Age: ");
+			emp.setAge(sc.nextInt());
+			sc.nextLine();
+			System.out.println("Salary: ");
+			emp.setSalary(sc.nextDouble());
+			sc.nextLine();
+			System.out.println("Mobile No");
+			emp.setMobile(sc.nextLine());
+			employeeService.addEmployee(emp);
+			System.out.println("Employee added successfully");
+		}
+		catch(EmployeeException e)
+		{
+			System.err.println(e.getMessage());
+		}
+		catch(Exception e)
+		{
+			System.err.println(e.getMessage());
+		}
+	}
+	public static void deleteEmployee() {
+		System.out.println("Employee Id: ");
+		int id=sc.nextInt();
+		try{
+			employeeService.deleteEmployee(id);
+			System.out.println("Employee with the id: "+id+" is deleted");
+		}
+		catch(EmployeeException e) {
+			System.err.println(e.getMessage());
+		}
+	}
+
+}
