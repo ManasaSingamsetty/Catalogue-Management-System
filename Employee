@@ -1,0 +1,234 @@
+package com.cg.employeeapp.dao;
+
+import java.util.List;
+
+import com.cg.employeeapp.dto.Employee;
+import com.cg.employeeapp.exception.EmployeeException;
+
+public interface EmployeeDao 
+{
+	List<Employee> getAllEmployees() throws EmployeeException;
+	void addEmployee(Employee emp) throws EmployeeException;
+	void deleteEmployee(int id) throws EmployeeException;
+}
+<----------------Implementation employee dao------------------------------------->
+package com.cg.employeeapp.dao;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import com.cg.employeeapp.db.StaticDb;
+import com.cg.employeeapp.dto.Employee;
+import com.cg.employeeapp.exception.EmployeeException;
+
+public class EmployeeDaoimpl implements EmployeeDao{
+	Map<Integer,Employee> empDb;
+	public EmployeeDaoimpl(){
+		empDb=StaticDb.getEmployeeDb();
+	}
+	@Override
+	public List<Employee> getAllEmployees() throws EmployeeException {
+		try 
+		{
+			List<Employee> employees=new ArrayList<Employee>();
+			for (Integer key : empDb.keySet()) {
+				Employee emp=empDb.get(key);
+				employees.add(emp);
+				}
+			return employees;
+		}
+		catch(Exception ex) {
+		throw new EmployeeException(ex.getMessage());	
+		}
+	}
+	@Override
+	public void addEmployee(Employee emp) throws EmployeeException {
+		try {
+			empDb.put(emp.getId(),emp);
+		}
+		catch(Exception e){
+			throw new EmployeeException(e.getMessage());
+		}
+	}
+	@Override
+	public void deleteEmployee(int id) throws EmployeeException {
+		try {
+			empDb.remove(id);
+		}
+		catch(Exception e) {
+			throw new EmployeeException(e.getMessage());
+		}
+		
+	}
+}
+<-------------------------------------Static db------------------------------------->
+package com.cg.employeeapp.db;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.cg.employeeapp.dto.Employee;
+
+public class StaticDb {
+	private static Map<Integer,Employee> employeeDb=new HashMap<Integer,Employee>();
+	static 
+	{
+		employeeDb.put(1001,new Employee(1001,"Mark","Male",23,56000,"9912977214"));
+		employeeDb.put(1002,new Employee(1002,"Helena","Female",21,52000,"9412677814"));
+		employeeDb.put(1003,new Employee(1003,"George","Male",28,36000,"9952778294"));
+		employeeDb.put(1004,new Employee(1004,"Park","Male",30,63000,"6812777224"));
+		employeeDb.put(1005,new Employee(1005,"Julie","Female",24,36000,"8911273244"));
+	}//static block used to create instances of Employee class
+	public static Map<Integer,Employee> getEmployeeDb(){
+		return employeeDb;
+	}//getter to access employeeDb object
+}
+
+<-----------------------------------Employee dto-------------------------------------------------------->
+package com.cg.employeeapp.dto;
+
+public class Employee {
+	private int id;
+	private String name;
+	private String gender;
+	private int age;
+	private double salary;
+	private String mobile;
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getGender() {
+		return gender;
+	}
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+	public int getAge() {
+		return age;
+	}
+	public void setAge(int age) {
+		this.age = age;
+	}
+	public double getSalary() {
+		return salary;
+	}
+	public void setSalary(double salary) {
+		this.salary = salary;
+	}
+	public String getMobile() {
+		return mobile;
+	}
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
+	public Employee(int id, String name, String gender, int age, double salary, String mobile) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.gender = gender;
+		this.age = age;
+		this.salary = salary;
+		this.mobile = mobile;
+	}
+	public Employee() {
+	}
+}
+<-----------------------------------------------Employee exception----------------------------------------->
+package com.cg.employeeapp.exception;
+
+@SuppressWarnings("serial")
+public class EmployeeException extends Exception {
+
+	public EmployeeException() {
+		super();
+	}
+	public EmployeeException(String message) {
+		super(message);
+	}
+
+}
+<---------------------------------------------Employee Service----------------------------->
+package com.cg.employeeapp.service;
+
+import java.util.List;
+
+import com.cg.employeeapp.dto.Employee;
+import com.cg.employeeapp.exception.EmployeeException;
+
+public interface EmployeeService {
+	List<Employee> getAllEmployees() throws EmployeeException;
+	boolean validate(Employee emp) throws EmployeeException;
+	void addEmployee(Employee emp) throws EmployeeException;
+	void deleteEmployee(int id) throws EmployeeException;
+}
+<-------------------------------------------Employee Service impl------------------------------------>
+package com.cg.employeeapp.service;
+
+import java.util.List;
+
+import com.cg.employeeapp.dao.EmployeeDao;
+import com.cg.employeeapp.dao.EmployeeDaoimpl;
+import com.cg.employeeapp.dto.Employee;
+import com.cg.employeeapp.exception.EmployeeException;
+
+public class EmployeeServiceImpl implements EmployeeService{
+	EmployeeDao employeeDao;
+	public EmployeeServiceImpl() {
+		employeeDao=new EmployeeDaoimpl();
+	}
+	@Override
+	public List<Employee> getAllEmployees() throws EmployeeException {
+		return employeeDao.getAllEmployees();
+	}
+	@Override
+	public boolean validate(Employee emp) throws EmployeeException {
+		boolean flag=true;
+		StringBuilder sb=new StringBuilder();
+		if(!validateName(emp.getName()))
+		{
+			sb.append("\nInvalid name, Name should start with a Capital Letter followed by"
+					+ "\n only alphabets and spaces ");
+			sb.append("\n");
+			flag=false;
+		}
+		if(!validateMobile(emp.getMobile()))
+		{
+			sb.append("\nInvalid mobile number, Mobile number should contain only digits and "
+					+ "\nshould contain only digits ");
+			sb.append("\n");
+			flag=false;
+		}
+		if(flag) 
+		{
+			return flag;			
+		}
+		else {
+			throw new EmployeeException(sb.toString());
+		}
+}
+	private boolean validateName(String name) {
+		return name.matches("[A-Z][A-Za-z\\s]+");
+	}
+	private boolean validateMobile(String mobile) {
+		return mobile.matches("\\d{10}");
+	}
+	@Override
+	public void addEmployee(Employee emp) throws EmployeeException {
+		employeeDao.addEmployee(emp);
+	}
+	@Override
+	public void deleteEmployee(int id) throws EmployeeException {
+		employeeDao.deleteEmployee(id);
+	}
+
+}
